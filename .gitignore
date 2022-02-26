@@ -1,0 +1,8 @@
+**.pyc
+.idea
+/pessoas/datasets/
+/OD-WeaponDetection/Sohas_weapon-Detection-YOLOv5
+
+*.yaml
+*.jpg
+*.sh
