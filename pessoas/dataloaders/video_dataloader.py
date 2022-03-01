@@ -43,7 +43,6 @@ class VideoDataLoader:
         self.return_only_one_face = return_only_one_face
         self.detector = PreProcess(self.preprocessing_method, crop_size=self.crop_size,
                                    return_only_one_face=self.return_only_one_face)
-    
 
     def __call__(self, filename):
         if 'youtube.com/' in filename.lower() or 'youtu.be/' in filename.lower():  # if is YouTube video
@@ -63,8 +62,8 @@ class VideoDataLoader:
         if self.n_frames is None:
             sample = np.arange(0, v_len)
         else:
-            if(self.n_frames <= 10):
-                self.n_frames = v_len//self.n_frames
+            if self.n_frames <= 20:
+                self.n_frames = int(np.ceil(v_len/self.n_frames))
             sample = np.linspace(0, v_len - 1, self.n_frames).astype(int)
 
         # Loop through frames
@@ -134,5 +133,14 @@ class VideoDataLoader:
 
         # print(np.asarray(frames_batches).shape, np.asarray(img_batches).shape, img_batches[0][0].shape,
         #       img_batches[0][1].shape,  np.asarray(crop_batches).shape, np.asarray(bb_batches).shape)
+        if len(faces) != 0:
+            frames = []
+            frames_batches.append(frames)
+            faces = []
+            img_batches.append(faces)
+            crops = []
+            crop_batches.append(crops)
+            bbs = []
+            bb_batches.append(bbs)
 
         return frames_batches, img_batches, crop_batches, bb_batches

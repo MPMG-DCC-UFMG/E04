@@ -33,5 +33,6 @@ thop  # FLOPS computation
 imageio
 scikit-learn
 keras
+tensorflow-gpu
 py7zr
 dlib

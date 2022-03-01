@@ -24,7 +24,6 @@ from networks.curricularface import IR_101, IR_50
 from networks.arcface import get_model
 
 
-
 def load_net(model_name, model_path=None, gpu=True):
     # initialize the network
     if model_name == 'mobilefacenet':
@@ -87,9 +86,9 @@ def load_net(model_name, model_path=None, gpu=True):
         net.load_state_dict(ckpt['net_state_dict'])
     elif model_name == 'curricularface':
         net = IR_101([112, 112])
-        split_files = [os.path.join(MODEL_DIR, 'a_CurricularFace_Backbone.pth')
-                      ,os.path.join(MODEL_DIR, 'b_CurricularFace_Backbone.pth')
-                      ,os.path.join(MODEL_DIR, 'c_CurricularFace_Backbone.pth')]
+        split_files = [os.path.join(MODEL_DIR, 'a_CurricularFace_Backbone.pth'),
+                       os.path.join(MODEL_DIR, 'b_CurricularFace_Backbone.pth'),
+                       os.path.join(MODEL_DIR, 'c_CurricularFace_Backbone.pth')]
         join_files(CURRICULARFACE_MODEL_PATH, split_files)
 
         if gpu:
@@ -102,11 +101,11 @@ def load_net(model_name, model_path=None, gpu=True):
             net.load_state_dict(ckpt['net_state_dict'])
     elif model_name == 'arcface':
         net = get_model('r100', dropout=0.0, fp16=True, num_features=512)
-        split_files = [os.path.join(MODEL_DIR, 'a_arcface_backbone.pth')
-                      ,os.path.join(MODEL_DIR, 'b_arcface_backbone.pth')
-                      ,os.path.join(MODEL_DIR, 'c_arcface_backbone.pth')]
+        split_files = [os.path.join(MODEL_DIR, 'a_arcface_backbone.pth'),
+                       os.path.join(MODEL_DIR, 'b_arcface_backbone.pth'),
+                       os.path.join(MODEL_DIR, 'c_arcface_backbone.pth')]
         join_files(ARCFACE_MODEL_PATH, split_files)
-        
+
         if gpu:
             ckpt = torch.load(ARCFACE_MODEL_PATH if model_path is None else model_path)
         else:
@@ -117,11 +116,11 @@ def load_net(model_name, model_path=None, gpu=True):
             net.load_state_dict(ckpt['net_state_dict'])
     elif model_name == 'cosface':
         net = get_model('r100', dropout=0.0, fp16=True, num_features=512)
-        split_files = [os.path.join(MODEL_DIR, 'a_cosface_backbone.pth')
-                      ,os.path.join(MODEL_DIR, 'b_cosface_backbone.pth')
-                      ,os.path.join(MODEL_DIR, 'c_cosface_backbone.pth')]
+        split_files = [os.path.join(MODEL_DIR, 'a_cosface_backbone.pth'),
+                       os.path.join(MODEL_DIR, 'b_cosface_backbone.pth'),
+                       os.path.join(MODEL_DIR, 'c_cosface_backbone.pth')]
         join_files(COSFACE_MODEL_PATH, split_files)
-        
+
         if gpu:
             ckpt = torch.load(COSFACE_MODEL_PATH if model_path is None else model_path)
         else:
@@ -145,7 +144,7 @@ def extract_gz():
     files = [os.path.join(MODEL_DIR, 'facenet.pt.gz.part-aa'), os.path.join(MODEL_DIR, 'facenet.pt.gz.part-ab')]
     with open(os.path.join(MODEL_DIR, 'facenet.gz'), 'ab') as result:  # append in binary mode
         for f in files:
-            with open(f, 'rb') as tmpf:        # open in binary mode also
+            with open(f, 'rb') as tmpf:  # open in binary mode also
                 result.write(tmpf.read())
 
     input = gzip.GzipFile(os.path.join(MODEL_DIR, 'facenet.gz'), 'rb')
@@ -156,11 +155,11 @@ def extract_gz():
     output.write(s)
     output.close()
 
+
 def join_files(new_file_name, file_names):
+    with open(new_file_name, 'wb') as result:  # append in binary mode
+        for f in file_names:
+            with open(f, 'rb') as tmpf:  # open in binary mode also
+                result.write(tmpf.read())
 
-  with open(new_file_name, 'wb') as result:  # append in binary mode
-    for f in file_names:
-      with open(f, 'rb') as tmpf:        # open in binary mode also
-        result.write(tmpf.read())
-
-  result.close()
+    result.close()

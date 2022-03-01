@@ -112,25 +112,24 @@ def plot_top15_person_retrieval(query_image, query_person, scores, query_num, im
     query_image: address to the query image.
     query_person: name of the person in query image.
     scores: ranked list containing the information of the images.
-    query_num: int representing the queru number when evaluating the whole dataset.
+    query_num: int representing the query number when evaluating the whole dataset.
     metrics: vector with the calculated metrics.
     cropped_image: query image cropped by preprocessing.
     bb: bouding boxes of query image by preprocessing.
     save_dir: directory where are saved the image results.
     """
-    
-    fig, axes = plt.subplots(3, 5, figsize=(16, 16), sharex=True, sharey=True)
+
+    fig, axes = plt.subplots(3, 5, figsize=(20, 20), sharex=True, sharey=True)
     ax = axes.ravel()
 
     # decode base64 file
     img = read_image(query_image)
-    
+
     basewidth = 160
     wpercent = (basewidth / float(img.shape[1]))
     hsize = int((float(img.shape[0]) * float(wpercent)))
     hpercent = (hsize / float(img.shape[0]))
     img = cv2.resize(img, (basewidth, hsize))
-    
 
     if os.path.isfile(query_image):
         ax[0].set_title('| Query image |\nPerson: %s\nImage: %s' %
@@ -139,27 +138,28 @@ def plot_top15_person_retrieval(query_image, query_person, scores, query_num, im
         ax[0].set_title('| Query image |\nPerson: %s' % query_person)
     ax[0].imshow(img)
 
-    ax[1].imshow(img)
+    ax[2].imshow(img)
 
-    '''bb[0] = bb[0]*wpercent
-    bb[2] = bb[2]*wpercent
-    bb[1] = bb[1]*hpercent
-    bb[3] = bb[3]*hpercent'''
+    bb[0] = bb[0] * wpercent
+    bb[2] = bb[2] * wpercent
+    bb[1] = bb[1] * hpercent
+    bb[3] = bb[3] * hpercent
 
     if bb is not None:
-        ax[1].set_title('| Bounding Box |')
+        ax[2].set_title('| Bounding Box |')
         rect = patches.Rectangle((bb[0], bb[1]), bb[2] - bb[0], bb[3] - bb[1],
                                  linewidth=1, edgecolor='r', facecolor='none')
-        ax[1].add_patch(rect)
+        ax[2].add_patch(rect)
     else:
-        ax[1].set_title('| NO Bounding Box |')
+        ax[2].set_title('| NO Bounding Box |')
 
     if cropped_image is not None:
-        ax[2].set_title('| Cropped Face |')
+        ax[4].set_title('| Cropped Face |')
         shift = 30  # this shift is only used to center the cropped image into de subplot
-        ax[2].imshow(cropped_image.astype('uint8'), extent=(shift, shift + cropped_image.shape[1], shift + cropped_image.shape[0], shift))
+        ax[4].imshow(cropped_image.astype('uint8'),
+                     extent=(shift, shift + cropped_image.shape[1], shift + cropped_image.shape[0], shift))
     else:
-        ax[2].set_title('| NO Cropped Face |')
+        ax[4].set_title('| NO Cropped Face |')
 
     unique_persons = []
     i = j = 0
