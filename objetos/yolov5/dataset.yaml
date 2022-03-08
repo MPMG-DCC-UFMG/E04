@@ -1,0 +1,11 @@
+# Example dataset.yaml file
+
+root: dataset/                   # Path to the root folder | *Optional*
+train: dataset/images/train/     # Path to the training images folder
+val: dataset/images/test/        # Path to the validation images folder
+
+# Number of classes
+nc: 14
+
+# Class names
+names: ['pistol', 'knife', 'bicycle', 'car', 'bus', 'motorbike', 'truck', 'machete', 'pocket/stiletto knife', 'axe', 'rifle/sniper', 'shotgun', 'machine gun', 'submachine gun']
