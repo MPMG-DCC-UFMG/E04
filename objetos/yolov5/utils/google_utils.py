@@ -62,10 +62,7 @@ def attempt_download(file, repo='ultralytics/yolov5', coco_only=False):
         except:  # fallback plan
             assets = ['yolov5s.pt', 'yolov5m.pt', 'yolov5l.pt', 'yolov5x.pt',
                     'yolov5s6.pt', 'yolov5m6.pt', 'yolov5l6.pt', 'yolov5x6.pt']
-            try:
-                tag = subprocess.check_output('git tag', shell=True, stderr=subprocess.STDOUT).decode().split()[-1]
-            except:
-                tag = 'v5.0' if coco_only else 'v1.0' # current release
+            tag = 'v5.0' if coco_only else 'v1.0' # current release
 
         if name in assets:
             safe_download(file,
