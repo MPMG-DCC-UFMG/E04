@@ -39,6 +39,7 @@ def read_image(image):
                     img = imread(image)
             elif validators.url(image):
                 img = imread(image)
+            
         return img
     except:
         raise NotImplementedError("Could not identify and read image")

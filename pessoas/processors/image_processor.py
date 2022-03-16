@@ -40,7 +40,7 @@ def extract_features_from_image(model, dataloader, query_label, gpu):
         if gpu:
             for i in range(len(imgs)):
                 imgs[i] = imgs[i].cuda()
-
+        
         res = [model(d.view(-1, d.shape[2], d.shape[3], d.shape[4])).data.cpu().numpy() for d in imgs]
         feature = np.concatenate((res[0], res[1]), 1)
         img_name = img_nm
@@ -77,7 +77,7 @@ def generate_rank(scores, k_rank):
         else:
             unique_persons.append(scores[j][1])
             persons_scores.append({"Name": scores[j][1].strip(), "Confidence":
-                scores[j][0], "Image": scores[j][2].strip()})
+                                   scores[j][0], "Image": scores[j][2].strip()})
             i += 1
         j += 1
     return persons_scores
@@ -96,7 +96,7 @@ def generate_ranking_for_image(database_data, query_data, K_images=1000, k_rank=
     :param config: Path to config file to be utilized by PyRetri.
     :return: top k list (with ID and confidence) of most similar images.
     """
-
+    
     if K_images:
         if len(database_data['feature']) > 10000:  # assume normalizing with query_data is not going to change too much
             database_features = database_data['normalized_feature']
@@ -223,7 +223,7 @@ def process_image(operation, model_name, model_path, image_query, query_label,
     # process specific image
     if operation == 'extract_features':
         assert query_label is not None, 'To process and add a new image to ' \
-                                        'the database, the flag --query_label is required.'
+                                             'the database, the flag --query_label is required.'
         # extract the features
         feature = extract_features_from_image(load_net(model_name, model_path, gpu),
                                               dataloader, query_label, gpu=gpu)

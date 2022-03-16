@@ -121,7 +121,7 @@ def train(dataset_path, save_dir, model_name, preprocessing_method='sphereface',
         paras_wo_bn = list(filter(lambda p: id(p) not in ignored_params, net.parameters()))
 
         optimizer_ft = optim.SGD([
-          {'params': paras_wo_bn + list(arc_margin.parameters()), 'weight_decay': 5e-4},
+          {'params': paras_wo_bn + list(arc_margin.parameters()), 'weight_decay': 5e-4}, 
           {'params': paras_only_bn, 'weight_decay': 0.0}
           ], lr=0.1, momentum=0.9)
     elif model_name == 'arcface' or model_name == 'cosface':
@@ -141,7 +141,7 @@ def train(dataset_path, save_dir, model_name, preprocessing_method='sphereface',
     #     net.load_state_dict(ckpt['net_state_dict'])
     #     start_epoch = ckpt['epoch'] + 1
 
-    for epoch in range(start_epoch, num_epoch):
+    for epoch in range(start_epoch, num_epoch+1):
         # train model
         logging.info('Train Epoch: {}/{} ...'.format(epoch, num_epoch))
         net.train()
