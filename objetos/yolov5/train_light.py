@@ -21,20 +21,20 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-import test  # import test.py to get mAP after each epoch
-from models.experimental import attempt_load
-from models.yolo import Model
-from utils.autoanchor import check_anchors
-from utils.datasets import create_dataloader
-from utils.options import defaultOptTrain
-from utils.general import labels_to_class_weights, increment_path, labels_to_image_weights, init_seeds, \
+from .test import test  # import test.py to get mAP after each epoch
+from .models.experimental import attempt_load
+from .models.yolo import Model
+from .utils.autoanchor import check_anchors
+from .utils.datasets import create_dataloader
+from .utils.options import defaultOptTrain
+from .utils.general import labels_to_class_weights, increment_path, labels_to_image_weights, init_seeds, \
     fitness, strip_optimizer, get_latest_run, check_dataset, check_file, check_git_status, check_img_size, \
     check_requirements, print_mutation, set_logging, one_cycle, colorstr
-from utils.google_utils import attempt_download
-from utils.loss import ComputeLoss
-from utils.plots import plot_images, plot_labels, plot_results, plot_evolution
-from utils.torch_utils import ModelEMA, select_device, intersect_dicts, torch_distributed_zero_first, de_parallel
-from utils.wandb_logging.wandb_utils import WandbLogger, check_wandb_resume
+from .utils.google_utils import attempt_download
+from .utils.loss import ComputeLoss
+from .utils.plots import plot_images, plot_labels, plot_results, plot_evolution
+from .utils.torch_utils import ModelEMA, select_device, intersect_dicts, torch_distributed_zero_first, de_parallel
+from .utils.wandb_logging.wandb_utils import WandbLogger, check_wandb_resume
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 # def train(opt, data, hyp_path, output_path, weights, epochs, device, cfg, batch_size, img_size, resume,
 # nosave, notest, cache_images, multi_scale, single_cls, sync_bn, local_rank, workers, save_period):
 
-def train(hyp_path='hyp.scratch.yaml', data='dataset.yaml', output_path='runs/train/exp',
+def train(hyp_path='/hyp.scratch.yaml', data='dataset.yaml', output_path='runs/train/exp',
           opt=defaultOptTrain(), tb_writer=None):
     opt.hyp = hyp_path
     opt.data = data
@@ -71,7 +71,7 @@ def train(hyp_path='hyp.scratch.yaml', data='dataset.yaml', output_path='runs/tr
         opt.data, opt.cfg, opt.hyp = check_file(opt.data), check_file(opt.cfg), check_file(opt.hyp)  # check files
         assert len(opt.cfg) or len(opt.weights), 'either --cfg or --weights must be specified'
         opt.img_size.extend([opt.img_size[-1]] * (2 - len(opt.img_size)))  # extend to 2 sizes (train, test)
-        opt.save_dir = str(increment_path(Path(opt.output_path)))
+        opt.save_dir = str(increment_path(Path(output_path)))
 
     # DDP mode
     opt.total_batch_size = opt.batch_size
@@ -220,7 +220,8 @@ def train(hyp_path='hyp.scratch.yaml', data='dataset.yaml', output_path='runs/tr
         if epochs < start_epoch:
             logger.info('%s has been trained for %g epochs. Fine-tuning for %g additional epochs.' %
                         (weights, ckpt['epoch'], epochs))
-            epochs += ckpt['epoch']  # finetune additional epochs
+        epochs += start_epoch  # finetune additional epochs
+        print(epochs)
 
         del ckpt, state_dict
 
@@ -388,7 +389,7 @@ def train(hyp_path='hyp.scratch.yaml', data='dataset.yaml', output_path='runs/tr
             final_epoch = epoch + 1 == epochs
             if not opt.notest or final_epoch:  # Calculate mAP
                 wandb_logger.current_epoch = epoch + 1
-                results, maps, times = test.test(data_dict,
+                results, maps, times = test(data_dict,
                                                  batch_size=batch_size * 2,
                                                  imgsz=imgsz_test,
                                                  model=ema.ema,
@@ -457,7 +458,7 @@ def train(hyp_path='hyp.scratch.yaml', data='dataset.yaml', output_path='runs/tr
 
         if is_coco:  # COCO dataset
             for m in [last, best] if best.exists() else [last]:  # speed, mAP tests
-                results, _, _ = test.test(opt.data,
+                results, _, _ = test(opt.data,
                                             batch_size=batch_size * 2,
                                             imgsz=imgsz_test,
                                             conf_thres=0.001,

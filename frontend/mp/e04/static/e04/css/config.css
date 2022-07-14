@@ -1,0 +1,74 @@
+.parent {
+    margin-bottom: 0rem;
+    text-align: left;
+    display: flex;
+  }
+@media (max-width: 50rem) {
+    .hidden-ss {
+      flex-wrap:wrap;
+    }
+  }
+
+
+
+.btn{
+    border: 1px solid gray;
+    color: rgb(20, 19, 19);
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+
+.dropdown-menu{
+    border: 1px solid gray !important;
+    width: 36rem;
+    color: black !important;
+    text-align: left !important;
+  }
+
+h3{
+    font-weight: bold;
+  }
+
+h4{
+    font-weight: bold;
+  }
+
+
+.btn-primary{
+    background-color: rgb(57,192,237);
+    align-self: center;
+}
+
+
+.select-form{
+    background-color: rgb(57,192,237) !important;
+    align-items: left !important;
+    padding-left: 2rem !important;
+    margin-right: 4rem;
+    width: 18rem !important; 
+    height: 3rem;
+    border-radius: 0.8rem;
+}
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black; 
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+ 
+  position: absolute;
+  z-index: 1;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}

@@ -5,7 +5,8 @@ from sklearn import preprocessing
 
 import torch
 
-from preprocessing.preprocessing_general import PreProcess
+from ..preprocessing.preprocessing_general import PreProcess
+from .conversor import generate_sha256
 
 
 class GenericDataLoader(object):
@@ -50,21 +51,28 @@ class GenericDataLoader(object):
         return _files, _labels, _labels_string
 
     def __getitem__(self, index):
+
         img = imageio.imread(self.img_list[index])
+
         cl = self.labels[index]
+        hash = generate_sha256(self.img_list[index])
 
         # if image is grayscale, transform into rgb by repeating the image 3 times
         if len(img.shape) == 2:
             img = np.stack([img] * 3, 2)
         
-        #rgba to rgb
-        if img.shape[2]==4: 
-            img = img[:,:,:3]
+        # rgba to rgb
+        if img.shape[2] == 4:
+            img = img[:, :, :3]
+
+        # Transpose images with RGB channels as first dimension
+        if img.shape[0] == 3:
+            img = np.transpose(img, (1, 2, 0))
+        
 
         img, bb = self.preprocess.preprocess(img)
         img = img.squeeze()
         bb = bb.squeeze()
-
         if self.train is True:
             # basic data augmentation
             flip = np.random.choice(2) * 2 - 1
@@ -72,9 +80,9 @@ class GenericDataLoader(object):
 
             # normalization
             img = (img - 127.5) / 128.0
-            if self.preprocessing_method != "mtcnn":
-                img = img.transpose(2, 0, 1)
+            img = img.transpose(2, 0, 1)
             img = torch.from_numpy(img).float()
+
 
             return img, cl
         else:
@@ -84,11 +92,11 @@ class GenericDataLoader(object):
             # normalization
             for i in range(len(imglist)):
                 imglist[i] = (imglist[i] - 127.5) / 128.0
-                #if self.preprocessing_method != "mtcnn":
+                # if self.preprocessing_method != "mtcnn":
                 imglist[i] = imglist[i].transpose(2, 0, 1)
             imgs = [torch.from_numpy(i).float() for i in imglist]
 
-            return imgs, cl, img, bb, self.img_list[index], self.labels_string[index]
+            return imgs, cl, img, bb, self.img_list[index], self.labels_string[index], hash
 
     def __len__(self):
         return len(self.img_list)

@@ -1,22 +1,23 @@
 import time
 import scipy.io
 import numpy as np
+import pickle
+
+from sklearn.preprocessing import normalize
 
 import torch.utils.data
 
-from config import *
-from utils import *
-from networks.load_network import load_net
-from plots import plot_top15_face_retrieval, plot_top15_person_retrieval
-from sklearn.preprocessing import normalize
-from PyRetri import index as pyretri
+from ..config import *
+from ..utils import *
+from ..networks.load_network import load_net
+from ..plots import plot_top15_face_retrieval, plot_top15_person_retrieval
+# from .image_processor import generate_ranking_for_image
 
-import pickle
-from processors.image_processor import generate_ranking_for_image
+from ..dataloaders.LFW_dataloader import LFW
+# from ..dataloaders.LFW_UPDATE_dataloader import LFW_UPDATE
+from ..dataloaders.yale_dataloader import YALE
 
-from dataloaders.LFW_dataloader import LFW
-# from dataloaders.LFW_UPDATE_dataloader import LFW_UPDATE
-from dataloaders.yale_dataloader import YALE
+# from ..PyRetri import index as pyretri
 
 
 def extract_features(dataloader, model, save_img_results=False, gpu=True):
@@ -36,12 +37,13 @@ def extract_features(dataloader, model, save_img_results=False, gpu=True):
     classes = None
     images = None
     names = None
+    hashes = None
     cropped_images = []
     bbs = []
     count = 0
 
     # forward
-    for imgs, cls, crop_img, bb, imgl_list, people in dataloader:
+    for imgs, cls, crop_img, bb, imgl_list, people, hash_img in dataloader:
         if gpu:
             for i in range(len(imgs)):
                 imgs[i] = imgs[i].cuda()
@@ -58,6 +60,7 @@ def extract_features(dataloader, model, save_img_results=False, gpu=True):
             images = imgl_list
             names = people
             bbs = bb
+            hashes = hash_img
             if save_img_results is True:
                 classes = cls
                 cropped_images = crop_img
@@ -66,20 +69,22 @@ def extract_features(dataloader, model, save_img_results=False, gpu=True):
             features = np.concatenate((features, feature), 0)
             images = np.concatenate((images, imgl_list), 0)
             bbs = np.concatenate((bbs, bb), 0)
+            hashes = np.concatenate((hashes, hash_img), 0)
             if save_img_results is True:
                 classes = np.concatenate((classes, cls), 0)
                 cropped_images = np.concatenate((cropped_images, crop_img), 0)
 
-    print(np.asarray(features).shape, np.asarray(bbs).shape, np.asarray(names).shape, np.asarray(images).shape)
+    print(np.asarray(features).shape, np.asarray(bbs).shape, np.asarray(names).shape,
+          np.asarray(images).shape, np.asarray(hashes).shape)
     if save_img_results is True:
         print(cropped_images.shape)
         print(classes.shape)
 
     if save_img_results is True:
         result = {'name': names, 'feature': features, 'class': classes, 'image': images,
-                  'cropped_image': cropped_images, 'bbs': bbs}
+                  'cropped_image': cropped_images, 'bbs': bbs, 'hashes': hashes}
     else:
-        result = {'name': names, 'feature': features, 'image': images, 'bbs': bbs}
+        result = {'name': names, 'feature': features, 'image': images, 'bbs': bbs, 'hashes': hashes}
 
     return result
 
@@ -103,14 +108,14 @@ def evaluate_dataset(result, metric='map', bib="numpy", gpu=False, save_dir=None
             database_features = database_data['normalized_feature']
             query_features = query_data['feature']
             num_features_query = query_features.shape[0]
-            print("n:", num_features_query)
+            # print("n:", num_features_query)
             query_bbs = query_data['bbs']
             # normalize query data using dataset data mean
-            print(query_features.shape)
+            # print(query_features.shape)
             query_features = query_features - (database_data['feature_mean'] - 1e-18)
-            print(query_features.shape)
+            # print(query_features.shape)
             query_features = normalize(query_features, norm='l2', axis=1)
-            print(query_features.shape)
+            # print(query_features.shape)
     else:
         database_features = database_data['feature']
         query_features = query_data['feature']
@@ -123,9 +128,9 @@ def evaluate_dataset(result, metric='map', bib="numpy", gpu=False, save_dir=None
         # extract mean from features and add a bias
         features = features - (mu - 1e-18)
         # divide by the standard deviation
-        print(features.shape)
+        # print(features.shape)
         features = normalize(features, norm='l2', axis=1)
-        print(np.linalg.norm(features[0]))
+        # print(np.linalg.norm(features[0]))
         query_features = features[0:num_features_query]
         database_features = features[num_features_query:]
 
@@ -225,8 +230,14 @@ def evaluate_dataset(result, metric='map', bib="numpy", gpu=False, save_dir=None
         top100 = np.mean(np.sum(aps[:, 0:100], axis=1) / np.minimum(corrects, 100))
         print('mAP: %f top1: %f top5: %f top10: %f top20: %f top50: %f top100: %f' %
               (mean_ap, top1, top5, top10, top20, top50, top100))
+
     print("Total execution time: %f seconds. Execution time per query: %f seconds." %
           (end - start, (end - start)/len(features)))
+
+    if metric == 'cmc':
+        return mean_cmc[0]
+    else:
+       return mean_ap 
 
 
 def process_dataset(operation, model_name, batch_size,

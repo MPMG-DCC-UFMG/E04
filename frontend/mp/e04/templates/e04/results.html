@@ -1,0 +1,85 @@
+{% extends 'e04/base_v2.html' %}
+
+{% block content %}
+
+<body>
+    <div>
+        <h1><strong>Resultados</strong></h1>
+        <div class=" container d-flex justify-content-center">
+            <form method=GET class="form-inline justify-content-center">
+                
+                    {{myFilter.form}}
+                    <button class="btn btn-info" type=submit> Search </button>  
+                
+            </form>
+        </div>
+        <table class="table table-striped mx-auto mt-3 shadow p-3 mb-5 bg-white rounded">
+            <thead class="bg-info text-black">
+                <tr>
+                    <th>Resultados</th>
+                    <th>Tipo</th>
+                    <th class="lth">Data da operação</th>
+                    <th class="lth">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in response %}
+                <tr>
+                    {%if result.type == 'TR' or result.type == 'UD' %}
+                        <td class="ftd"><a href="UpTr{{result.id}}">Resultado_{{ result.id }}</a> </td>
+                    {%else%}
+                        <td class="ftd"> <a href="{{request.path}}{{ result.id }}">Resultado_{{ result.id }}</a>  </td>
+                    {%endif%}
+                    <td> 
+                        {%if result.type == 'TR' %}
+                            Treino
+                        {%elif result.type == 'RE' %}
+                            Recuperação
+                        {%elif result.type == 'DE' %}
+                            Detecção
+                        {%elif result.type == 'RD' %}
+                            Recuperação e Detecção
+                        {%elif result.type == 'UD' %}
+                            Update DB    
+                        {%endif%} 
+                    </td>
+                       <!--{{ result.type }} --> 
+                    <td class="ltd"> {{ result.date }} </td>
+                    <td class="ltd">
+                        {% if result.status == 'PR'%}
+                            Processando
+                        {%elif result.status == 'FI' %}
+                            Concluído
+                        {%elif result.status == 'PD' %}
+                            Pendente
+                        {%elif result.status == 'ER' %}
+                            Erro
+                        {%endif%}                
+                    </td>
+                </tr>                 
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination">
+        <span class="step-links">
+            {% if response.has_previous %}
+                <a href="?page=1"><button class="btn btn-info" >&laquo; first</button></a>
+                <a href="?page={{ response.previous_page_number }}"><button  class="btn btn-info" > previous</button></a>
+            {% endif %}
+    
+            <span class="current">
+                Page {{ response.number }} of {{ response.paginator.num_pages }}.
+            </span>
+    
+            {% if response.has_next %}
+                <a href="?page={{ response.next_page_number }}"><button  class="btn btn-info" >next </button> </a>
+                <a href="?page={{ response.paginator.num_pages }}"><button  class="btn btn-info" > last &raquo; </button> </a>
+            {% endif %}
+        </span>
+    </div>
+
+</body>
+
+{% endblock %}
